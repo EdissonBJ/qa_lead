@@ -1,0 +1,191 @@
+{
+	"info": {
+		"_postman_id": "16fb0050-1daf-436f-9476-0dc729dd5fc4",
+		"name": "stageGreentex",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "12180581"
+	},
+	"item": [
+		{
+			"name": "Formulario de contacto EXITOSO",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"firstName\": \"123\",\r\n    \"lastName\": \"Gómez\",\r\n    \"interestedIn\": \"Sample Fabrics\",\r\n    \"company\": \"Telefónica\",\r\n    \"phoneNumber\": \"+57 3001234567\",\r\n    \"email\": \"edi@example.com\",\r\n    \"location\": \"Bogotá, Colombia\",\r\n    \"message\": \"Estoy interesado en conocer más detalles sobre sus productos y tiempos de entrega.\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "{{base_url}}{{contact_endpoint}}"
+			},
+			"response": []
+		},
+		{
+			"name": "Formulario de contacto INVALIDO",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Parse the request body\r",
+							"const body = request.data ? JSON.parse(request.data) : {};\r",
+							"\r",
+							"// Define valid locations\r",
+							"const validLocations = [\r",
+							"    \"North America\",\r",
+							"    \"South America\",\r",
+							"    \"Europe\",\r",
+							"    \"Asia\",\r",
+							"    \"Africa\",\r",
+							"    \"Oceania\"\r",
+							"];\r",
+							"\r",
+							"// Test 1: Check all required fields are present\r",
+							"pm.test(\"All required fields are present\", function () {\r",
+							"    pm.expect(body).to.have.property(\"firstName\");\r",
+							"    pm.expect(body).to.have.property(\"lastName\");\r",
+							"    pm.expect(body).to.have.property(\"email\");\r",
+							"    pm.expect(body).to.have.property(\"phoneNumber\");\r",
+							"    pm.expect(body).to.have.property(\"location\");\r",
+							"    pm.expect(body).to.have.property(\"interestedIn\");\r",
+							"});\r",
+							"\r",
+							"// Test 2: Email format is valid\r",
+							"pm.test(\"Email has valid format\", function () {\r",
+							"    const emailRegex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;\r",
+							"    pm.expect(body.email).to.match(emailRegex);\r",
+							"});\r",
+							"\r",
+							"// Test 3: Phone number format is valid (international format)\r",
+							"pm.test(\"Phone number has valid format\", function () {\r",
+							"    // Accepts formats like: +57 3001234567, +1-555-123-4567, +44 20 1234 5678\r",
+							"    const phoneRegex = /^\\+\\d{1,3}[\\s\\-]?\\d{1,4}[\\s\\-]?\\d{1,4}[\\s\\-]?\\d{1,9}$/;\r",
+							"    pm.expect(body.phoneNumber).to.match(phoneRegex);\r",
+							"});\r",
+							"\r",
+							"// Test 4: First name is not empty\r",
+							"pm.test(\"First name is not empty\", function () {\r",
+							"    pm.expect(body.firstName).to.be.a(\"string\");\r",
+							"    pm.expect(body.firstName.trim()).to.have.length.above(0);\r",
+							"});\r",
+							"\r",
+							"// Test 5: Last name is not empty\r",
+							"pm.test(\"Last name is not empty\", function () {\r",
+							"    pm.expect(body.lastName).to.be.a(\"string\");\r",
+							"    pm.expect(body.lastName.trim()).to.have.length.above(0);\r",
+							"});\r",
+							"\r",
+							"// Test 6: Email has appropriate length (min 5, max 254 per RFC)\r",
+							"pm.test(\"Email has appropriate length\", function () {\r",
+							"    pm.expect(body.email).to.have.length.within(5, 254);\r",
+							"});\r",
+							"\r",
+							"// Test 7: Phone number has appropriate length\r",
+							"pm.test(\"Phone number has appropriate length\", function () {\r",
+							"    // Remove spaces and dashes for length check\r",
+							"    const cleanPhone = body.phoneNumber.replace(/[\\s\\-]/g, \"\");\r",
+							"    pm.expect(cleanPhone).to.have.length.within(10, 15);\r",
+							"});\r",
+							"\r",
+							"// Test 8: Location is from predefined list\r",
+							"pm.test(\"Location is from valid list\", function () {\r",
+							"    pm.expect(validLocations).to.include(body.location);\r",
+							"});\r",
+							"\r",
+							"// Additional validation tests\r",
+							"pm.test(\"First name contains only valid characters\", function () {\r",
+							"    // Allows letters, spaces, hyphens, and accented characters\r",
+							"    const nameRegex = /^[a-zA-ZÀ-ÿ\\s\\-']+$/;\r",
+							"    pm.expect(body.firstName).to.match(nameRegex);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Last name contains only valid characters\", function () {\r",
+							"    // Allows letters, spaces, hyphens, and accented characters\r",
+							"    const nameRegex = /^[a-zA-ZÀ-ÿ\\s\\-']+$/;\r",
+							"    pm.expect(body.lastName).to.match(nameRegex);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"InterestedIn field is not empty if present\", function () {\r",
+							"    if (body.interestedIn) {\r",
+							"        pm.expect(body.interestedIn.trim()).to.have.length.above(0);\r",
+							"    }\r",
+							"});\r",
+							"\r",
+							"// Summary test - overall validation status\r",
+							"pm.test(\"Contact form data is valid\", function () {\r",
+							"    const isValid = \r",
+							"        body.firstName && body.firstName.trim().length > 0 &&\r",
+							"        body.lastName && body.lastName.trim().length > 0 &&\r",
+							"        /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(body.email) &&\r",
+							"        /^\\+\\d{1,3}[\\s\\-]?\\d{1,4}[\\s\\-]?\\d{1,4}[\\s\\-]?\\d{1,9}$/.test(body.phoneNumber) &&\r",
+							"        validLocations.includes(body.location);\r",
+							"    \r",
+							"    pm.expect(isValid).to.be.true;\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"firstName\": \"w\",\r\n    \"lastName\": \"123\",\r\n    \"interestedIn\": \"Fabrics\",\r\n    \"company\": \"123\",\r\n    \"phoneNumber\": \"3001234567\",\r\n    \"email\": \"ediexample.com\",\r\n    \"location\": \"North America\",\r\n    \"message\": \"Estoy interesado en conocer más detalles sobre sus productos y tiempos de entrega.\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "{{base_url}}{{contact_endpoint}}"
+			},
+			"response": []
+		},
+		{
+			"name": "Lista de productos OK",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// 1. Debe responder 200 OK\r",
+							"pm.test(\"Status code is 200 OK\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"// 2. Tiempo de respuesta < 3000 ms\r",
+							"pm.test(\"Response time is under 3000ms\", function () {\r",
+							"    pm.expect(pm.response.responseTime).to.be.below(3000);\r",
+							"});\r",
+							"\r",
+							"// 3. Content-Type debe existir y ser HTML\r",
+							"pm.test(\"Content-Type header is present and is HTML\", function () {\r",
+							"    const contentType = pm.response.headers.get(\"Content-Type\");\r",
+							"    pm.expect(contentType).to.exist;\r",
+							"    pm.expect(contentType.toLowerCase()).to.include(\"text/html\");\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": "{{base_url}}{{products_list}}"
+			},
+			"response": []
+		}
+	]
+}
